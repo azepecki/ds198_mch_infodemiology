@@ -7,8 +7,8 @@ import csv
 import simulate_keywords
 
 """
-Receives relative_search_volumes and initial search query as inputs. 
-Our function then makes a search using Google's API, parses through the first ten sites in the results for each search and writes the appropriate attributes to a csv file in OUTPUT/SEARCH. 
+Receives relative_search_volumes and initial search query as inputs.
+Our function then makes a search using Google's API, parses through the first ten sites in the results for each search and writes the appropriate attributes to a csv file in OUTPUT/SEARCH.
 """
 def main(relative_search_volumes, initial_search_query):
     code = "US"
@@ -16,12 +16,12 @@ def main(relative_search_volumes, initial_search_query):
     params = {
         'url' : 'www.googleapis.com/customsearch/v1',
         'cx' : "007577961584064119408%3A0r-ks0pzwfw",
-        'key' : "AIzaSyCwrSmxtYMKbIktk0fHRFAGOfsl1t0hMSI",
+        'key' : "", #TODO: add developer key here
     }
     output_dir = os.getcwd() + "/output/search/" + code
     simulate_keywords.Simulation.mkdir_p(output_dir)
     name = output_dir + "/" + datetime.datetime.now().strftime('%Y-%m-%d-%H:%M') + ".csv"
-    
+
     with open(name, "w") as csvfile:
         field_names = ["initial_search_query", "query", "position", "link", "displayLink", "site_probability"]
         writer = csv.DictWriter(csvfile, fieldnames=field_names)
@@ -34,7 +34,7 @@ def main(relative_search_volumes, initial_search_query):
                 data = json.loads(reponse.text)
             except requests.exceptions.SSLError as e:
                 print(e)
-                pass 
+                pass
 
             try:
                 if data["error"]["code"] == 403:
@@ -42,15 +42,15 @@ def main(relative_search_volumes, initial_search_query):
                     raise Exception("Over our search quota for today.")
             except:
                 index = 1
-                try: 
+                try:
                     for item in data["items"]:
                         probability = return_site_probability(q, str(index))
                         writer.writerow({
-                            "initial_search_query": initial_search_query, 
-                            "query": list(q.keys())[0], 
-                            "position": str(index), 
-                            "link": item["link"], 
-                            "displayLink": item["displayLink"], 
+                            "initial_search_query": initial_search_query,
+                            "query": list(q.keys())[0],
+                            "position": str(index),
+                            "link": item["link"],
+                            "displayLink": item["displayLink"],
                             "site_probability": probability
                         })
                         index += 1
@@ -65,7 +65,7 @@ def main(relative_search_volumes, initial_search_query):
 """
 Calculate the site probability for a particular site
 """
-def return_site_probability(relative_search_volume, position ): 
+def return_site_probability(relative_search_volume, position ):
     query = list(relative_search_volume.keys())[0]
     probability = list(relative_search_volume.values())[0]
     return probability * get_probability(position)
@@ -75,8 +75,8 @@ def return_site_probability(relative_search_volume, position ):
 Site probabilities are determined by Chitika study
 For reference, please see methodology paper
 """
-def get_probability(position): 
-    if position == "1": 
+def get_probability(position):
+    if position == "1":
         return 0.35
     elif position == "2":
         return 0.20
@@ -88,12 +88,11 @@ def get_probability(position):
         return 0.07
     elif position == "6":
         return 0.05
-    elif position == "7": 
+    elif position == "7":
         return 0.04
     elif position == "8":
         return 0.03
-    elif position == "9": 
+    elif position == "9":
         return 0.02
     else:
         return 0.01
-  
