@@ -15,11 +15,13 @@ class Simulation(object):
     TRENDS_VERSION = "v1beta"
     K = 1
 
-    def __init__(self, initial_search_term, geoLocation, startDate, endDate):
+    def __init__(self, initial_search_term, geoLocation, startDateTrends, endDateTrends, startDateTimelines, endDateTimelines):
         self.initial_search_term = initial_search_term
         self.geoLocation = geoLocation
-        self.startDate = startDate
-        self.endDate = endDate
+        self.startDateTrends = startDateTrends
+        self.endDateTrends = endDateTrends
+        self.startDateTimelines = startDateTimelines
+        self.endDateTimelines = endDateTimelines
         self.google_client = GoogleClient(Simulation.TRENDS_SERVER, Simulation.TRENDS_VERSION)
         self.topics = []
         self.initial_queries = []
@@ -59,8 +61,8 @@ class Simulation(object):
                 try: 
                     writer.writerow({
                         "initial search term": self.initial_search_term,
-                        "startDate": self.startDate,
-                        "endDate": self.endDate,
+                        "startDate": self.startDateTrends,
+                        "endDate": self.endDateTrends,
                         "query": item['query'], 
                         "value": item['value'], 
                         "level": item['level']
@@ -94,7 +96,7 @@ class Simulation(object):
     """
     def get_topics(self):
         self.topics = self.google_client.find_topics(
-            self.initial_search_term, self.geoLocation['code'], self.startDate, self.endDate
+            self.initial_search_term, self.geoLocation['code'], self.startDateTrends, self.endDateTrends
         )
 
     
@@ -103,7 +105,7 @@ class Simulation(object):
     """
     def get_queries(self):
         queries, values = self.google_client.find_queries(
-            self.initial_search_term, self.geoLocation['code'], self.startDate, self.endDate
+            self.initial_search_term, self.geoLocation['code'], self.startDateTrends, self.endDateTrends
         )
         for query, value in zip(queries, values): 
             item = {"query": query, "value": value, "level": 1, "follow_up_terms": []}
@@ -131,7 +133,7 @@ class Simulation(object):
     
         for item in self.initial_queries:
             follow_up_queries, follow_up_values = self.google_client.find_queries(
-                item['query'], self.geoLocation, self.startDate, self.endDate
+                item['query'], self.geoLocation, self.startDateTrends, self.endDateTrends
             )
             for query, value in zip(follow_up_queries, follow_up_values): 
                 if query not in queries_no_duplicates: 
@@ -143,7 +145,7 @@ class Simulation(object):
             # To look beyond three levels, modify this function
             for second_level_item in item['follow_up_terms']:
                 follow_up_queries, follow_up_values = self.google_client.find_queries(
-                    second_level_item['query'], self.geoLocation, self.startDate, self.endDate
+                    second_level_item['query'], self.geoLocation, self.startDateTrends, self.endDateTrends
                 )
                 for query, value in zip(follow_up_queries, follow_up_values): 
                     if query not in queries_no_duplicates: 
@@ -158,7 +160,7 @@ class Simulation(object):
         # You could also override terms to use your masterlist so that you are working with the same list of terms for all locs
         terms = [query['query'] for query in self.initial_queries]
         relative_search_volumes = self.google_client.get_timelines_for_health(
-            terms, self.geoLocation, self.startDate, self.endDate
+            terms, self.geoLocation, self.startDateTimelines, self.endDateTimelines
         )
         self.relative_search_volumes = relative_search_volumes
     
