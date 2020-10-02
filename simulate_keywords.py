@@ -158,7 +158,7 @@ class Simulation(object):
     def get_relative_search_volumes(self): 
         logging.info("Starting simulation with health trends")
         # You could also override terms to use your masterlist so that you are working with the same list of terms for all locs
-        terms = [query['query'] for query in self.initial_queries]
+        terms = [query['query'] for query in self.initial_queries if query['level'] == 1]
         relative_search_volumes = self.google_client.get_timelines_for_health(
             terms, self.geoLocation, self.startDateTimelines, self.endDateTimelines
         )
